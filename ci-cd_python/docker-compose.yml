@@ -1,0 +1,31 @@
+version: '3.2'
+
+services:
+  web:
+    image: $REGISTRY/main/app:$CI_COMMIT_SHA
+    container_name: ${CONTAINER_PREFIX}_app
+    command: "tail -f /dev/null"
+    volumes:
+      - ./:/var/www
+    working_dir: /var/www
+
+  postgres:
+    image: postgres:9.6
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_DB=database
+    volumes:
+      - ./postgresql:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:latest
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx:/etc/nginx
+      - static:/srv/static
+    depends_on:
+      - web
+    restart: unless-stopped
